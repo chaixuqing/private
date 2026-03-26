@@ -136,7 +136,7 @@ class Bot:
 
         try:
             response = self.modelscope_client.chat.completions.create(
-                model="Qwen/Qwen2.5-VL-72B-Instruct",
+                model="Qwen/Qwen3-VL-32B-Thinking",
                 messages=[
                     {"role": "system",
                      "content": [{"type": "text", "text": "你是电影专家，任务是识别海报并选择正确标题。"}]},
