@@ -202,8 +202,8 @@ if __name__ == "__main__":
     argument_parser.add_argument("--model-api-key", help="ModelScope API Key")
     argument_parser.add_argument("--model-base-url", default="https://api-inference.modelscope.cn/v1", help="ModelScope API Base URL")
     args = argument_parser.parse_args()
-    env_username = os.getenv("BOT_USERNAME")
-    env_password = os.getenv("BOT_PASSWORD")
+    env_username = os.getenv("BOT_USERNAME") or os.getenv("USERNAME")
+    env_password = os.getenv("BOT_PASSWORD") or os.getenv("PASSWORD")
 
     os.makedirs("data", exist_ok=True)
 
