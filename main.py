@@ -67,17 +67,19 @@ class Bot:
                 "password": self.password,
                 "logout": 90
             }
-            try:
-                tree = BeautifulSoup(login_page.text, "html.parser")
-                form = tree.find("form", action=lambda x: x and "takelogin.php" in x)
-                if form is not None:
-                    for input_tag in form.select("input[name][type='hidden']"):
-                        field_name = input_tag.get("name")
-                        if field_name and field_name not in payload:
-                            payload[field_name] = input_tag.get("value", "")
-                action = form.get("action") if form is not None else "takelogin.php"
-            except Exception:
-                action = "takelogin.php"
+            tree = BeautifulSoup(login_page.text, "html.parser")
+            form = None
+            for candidate in tree.find_all("form"):
+                action_attr = candidate.get("action") or ""
+                if "takelogin.php" in action_attr:
+                    form = candidate
+                    break
+            if form is not None:
+                for input_tag in form.select("input[type='hidden'][name]"):
+                    field_name = input_tag.get("name")
+                    if field_name and field_name not in payload:
+                        payload[field_name] = input_tag.get("value", "")
+            action = form.get("action") if form is not None and form.get("action") else "takelogin.php"
 
             response = self.session.post(urljoin(self.base_url, action), payload)
             attendance_check = self.session.get(f"{self.base_url}attendance.php")
