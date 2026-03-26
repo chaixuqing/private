@@ -202,8 +202,8 @@ if __name__ == "__main__":
     argument_parser.add_argument("--model-api-key", help="ModelScope API Key")
     argument_parser.add_argument("--model-base-url", default="https://api-inference.modelscope.cn/v1", help="ModelScope API Base URL")
     args = argument_parser.parse_args()
-    env_username = os.getenv("USERNAME")
-    env_password = os.getenv("PASSWORD")
+    env_username = os.getenv("BOT_USERNAME")
+    env_password = os.getenv("BOT_PASSWORD")
 
     os.makedirs("data", exist_ok=True)
 
@@ -213,14 +213,18 @@ if __name__ == "__main__":
     if os.path.exists(config_path):
         print(f"✅ 从配置文件加载: {config_path}")
         config = load_config(config_path)
-        config["username"] = args.username or env_username or config["username"]
-        config["password"] = args.password or env_password or config["password"]
+        config["username"] = args.username if args.username is not None else (
+            env_username if env_username is not None else config["username"]
+        )
+        config["password"] = args.password if args.password is not None else (
+            env_password if env_password is not None else config["password"]
+        )
     else:
         print("ℹ️ 配置文件不存在，从命令行参数读取配置")
-        username = args.username or env_username
-        password = args.password or env_password
+        username = args.username if args.username is not None else env_username
+        password = args.password if args.password is not None else env_password
         if not username or not password:
-            raise ValueError("未找到配置文件时，必须通过参数或环境变量(USERNAME/PASSWORD)提供账号密码")
+            raise ValueError("未找到配置文件时，必须通过参数或环境变量(BOT_USERNAME/BOT_PASSWORD)提供账号密码")
         
         config = {
             "username": username,
