@@ -23,6 +23,6 @@ jobs:
 
     - name: Run main.py
       env:
-        BOT_USERNAME: ${{ secrets.USERNAME }}
-        BOT_PASSWORD: ${{ secrets.PASSWORD }}
+        BOT_USERNAME: ${{ secrets.BOT_USERNAME || secrets.USERNAME }}
+        BOT_PASSWORD: ${{ secrets.BOT_PASSWORD || secrets.PASSWORD }}
       run: python main.py
