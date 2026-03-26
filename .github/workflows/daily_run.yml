@@ -3,6 +3,7 @@ name: Daily Main.py Run
 on:
   schedule:
     - cron: '0 0 * * *' # Runs every day at 00:00 UTC (8 AM Beijing Time)
+  workflow_dispatch:
 
 jobs:
   run-main-py:
