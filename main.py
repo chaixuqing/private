@@ -6,6 +6,7 @@ import random
 import time
 from argparse import ArgumentParser
 from datetime import datetime
+from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 from openai import OpenAI
@@ -60,13 +61,27 @@ class Bot:
     def login(self) -> bool:
         try_time = 5
         while try_time > 0:
-            _ = self.session.get(f"{self.base_url}login.php")
-            response = self.session.post(f"{self.base_url}takelogin.php", {
+            login_page = self.session.get(f"{self.base_url}login.php")
+            payload = {
                 "username": self.username,
                 "password": self.password,
                 "logout": 90
-            })
-            if "logout.php" in response.text:
+            }
+            try:
+                tree = BeautifulSoup(login_page.text, "html.parser")
+                form = tree.find("form", action=lambda x: x and "takelogin.php" in x)
+                if form is not None:
+                    for input_tag in form.select("input[name][type='hidden']"):
+                        field_name = input_tag.get("name")
+                        if field_name and field_name not in payload:
+                            payload[field_name] = input_tag.get("value", "")
+                action = form.get("action") if form is not None else "takelogin.php"
+            except Exception:
+                action = "takelogin.php"
+
+            response = self.session.post(urljoin(self.base_url, action), payload)
+            attendance_check = self.session.get(f"{self.base_url}attendance.php")
+            if "logout.php" in response.text or "login.php" not in attendance_check.url:
                 self.log("✅ Logged in successfully")
                 os.makedirs(os.path.dirname(self.cookies_path), exist_ok=True)
                 with open(self.cookies_path, "wb") as f:
