@@ -86,6 +86,7 @@ class Bot:
             self.log(f"⚠️ 签到失败，{4 - i} 次重试剩余...")
             time.sleep(random.uniform(1, 5))
         self.log("❌ 连续 5 次签到失败。")
+        raise RuntimeError("Unexpected end of retries")
         return False
 
     def auto_attendance_once(self) -> bool:
