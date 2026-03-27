@@ -67,23 +67,44 @@ class Bot:
                 "password": self.password,
                 "logout": 90
             }
-            tree = BeautifulSoup(login_page.text, "html.parser")
+            soup = BeautifulSoup(login_page.text, "html.parser")
             form = None
-            for candidate in tree.find_all("form"):
-                action_attr = candidate.get("action") or ""
-                if "takelogin.php" in action_attr:
+            for candidate in soup.find_all("form"):
+                input_names = {
+                    (input_tag.get("name") or "").lower()
+                    for input_tag in candidate.find_all("input")
+                }
+                if "username" in input_names and "password" in input_names:
                     form = candidate
                     break
+            if form is None:
+                for candidate in soup.find_all("form"):
+                    action_attr = candidate.get("action") or ""
+                    if "takelogin.php" in action_attr:
+                        form = candidate
+                        break
             if form is not None:
                 for input_tag in form.select("input[type='hidden'][name]"):
                     field_name = input_tag.get("name")
                     if field_name and field_name not in payload:
                         payload[field_name] = input_tag.get("value", "")
-            action = form.get("action") if form is not None and form.get("action") else "takelogin.php"
+                for input_tag in form.select("input[type='submit'][name]"):
+                    field_name = input_tag.get("name")
+                    if field_name and field_name not in payload:
+                        payload[field_name] = input_tag.get("value", "")
+            action = "takelogin.php"
+            if form is not None:
+                form_action = form.get("action")
+                if form_action:
+                    action = form_action
 
-            response = self.session.post(urljoin(self.base_url, action), payload)
+            response = self.session.post(
+                urljoin(self.base_url, action),
+                payload,
+                headers={"Referer": login_page.url}
+            )
             attendance_check = self.session.get(f"{self.base_url}attendance.php")
-            if "logout.php" in response.text or "login.php" not in attendance_check.url:
+            if "login.php" not in attendance_check.url:
                 self.log("✅ Logged in successfully")
                 os.makedirs(os.path.dirname(self.cookies_path), exist_ok=True)
                 with open(self.cookies_path, "wb") as f:
