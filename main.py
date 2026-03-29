@@ -279,10 +279,10 @@ if __name__ == "__main__":
     except requests.exceptions.ConnectionError as e:
         error_message = str(e)
         if "Failed to resolve" in error_message or "NameResolutionError" in error_message:
-            print(f"❌ 网络错误：DNS 解析失败，目标站点不可达。{e}")
+            print("❌ 网络错误：DNS 解析失败，目标站点不可达。")
         else:
-            print(f"❌ 网络错误：无法连接目标站点。{e}")
+            print("❌ 网络错误：无法连接目标站点。")
         raise SystemExit(1)
     except requests.exceptions.RequestException as e:
-        print(f"❌ 网络请求异常：{e}")
+        print(f"❌ 网络请求异常：{type(e).__name__}")
         raise SystemExit(1)
